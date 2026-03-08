@@ -26,82 +26,99 @@
             background: var(--bg); color: var(--text); 
             font-family: 'Pretendard', sans-serif;
             margin: 0; display: flex; justify-content: center; align-items: center; 
-            height: 100vh; width: 100vw; overflow: hidden; touch-action: none;
+            height: 100vh; width: 100vw; overflow: hidden;
         }
 
-        /* 반응형 컨테이너: 패드와 폰 모두 대응 */
         .screen { 
             display: none; 
             width: 100%; 
-            max-width: 500px; /* 태블릿 대응 너비 확장 */
+            max-width: 500px; 
             height: 100%; 
-            max-height: 900px; /* 너무 길어지지 않게 제한 */
             background: var(--card); 
-            padding: 20px; 
-            flex-direction: column; 
-            align-items: center; 
             position: relative;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-        }
-
-        @media (min-height: 800px) {
-            .screen { border-radius: 30px; height: 95vh; }
+            flex-direction: column;
         }
 
         .active { display: flex; }
 
-        /* 상단 UI 위치 조정 */
-        .timer-container { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); }
-        #timer { font-size: 2.5rem; font-weight: 800; }
-        .score-display { position: absolute; top: 30px; left: 25px; font-weight: bold; color: var(--primary); font-size: 1.1rem; }
-        #manual-btn { position: absolute; top: 25px; right: 25px; font-size: 1.8rem; cursor: pointer; z-index: 20; }
+        /* 헤더 고정 영역 */
+        .header-ui {
+            padding: 20px;
+            height: 80px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            background: var(--card);
+            z-index: 100;
+        }
 
-        /* 인벤토리: 상단 여백 유연하게 */
-        .inventory { display: flex; gap: 12px; margin-top: clamp(80px, 15vh, 120px); margin-bottom: 20px; }
+        /* 스크롤 가능한 메인 영역 */
+        .main-content {
+            flex: 1;
+            overflow-y: auto; /* 내용이 많으면 스크롤 허용 */
+            -webkit-overflow-scrolling: touch;
+            padding: 0 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 스크롤 시 바운스 방지 (조작성 향상) */
+            overscroll-behavior-y: contain; 
+        }
+
+        /* 스크롤바 숨기기 (선택 사항) */
+        .main-content::-webkit-scrollbar { width: 4px; }
+        .main-content::-webkit-scrollbar-thumb { background: #ddd; border-radius: 10px; }
+
+        .timer-container { font-size: 2.5rem; font-weight: 800; line-height: 1; }
+        .score-display { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+        #manual-btn { font-size: 1.8rem; cursor: pointer; }
+
+        .inventory { display: flex; gap: 12px; margin: 20px 0; flex-shrink: 0; }
         .item { 
-            width: clamp(60px, 15vw, 75px); height: clamp(60px, 15vw, 75px); 
+            width: clamp(65px, 15vw, 80px); height: clamp(65px, 15vw, 80px); 
             background: #f9f9f9; border: 1px solid var(--border);
-            border-radius: 20px; font-size: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+            border-radius: 20px; font-size: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer;
         }
 
         #drag-icon { position: fixed; pointer-events: none; z-index: 9999; font-size: 45px; display: none; transform: translate(-50%, -50%); }
 
-        /* 냄비 사이즈 반응형 */
-        #pot-container { position: relative; margin: 15px 0; width: 100%; display: flex; justify-content: center; }
+        #pot-container { position: relative; margin: 20px 0; flex-shrink: 0; }
         #pot { 
-            width: clamp(180px, 50vw, 240px); 
-            height: clamp(160px, 45vw, 220px); 
+            width: 240px; height: 220px; 
             background: #444; border: 6px solid #222; border-radius: 50% 50% 40% 40%; 
             display: flex; flex-direction: column; align-items: center; justify-content: center;
-            transition: background-color 0.2s; position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            transition: background-color 0.2s; position: relative;
         }
-
-        .boiling { animation: shake 0.15s infinite; }
-        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(1px, 1px); } 75% { transform: translate(-1px, -1px); } }
 
         #liquid { position: absolute; width: 100px; height: 100px; font-size: 50px; display: none; align-items: center; justify-content: center; animation: spin 1.5s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-        /* 하단 컨트롤 레이아웃 개선 */
-        .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-bottom: 20px; }
+        /* 하단 고정 컨트롤 영역 */
+        .footer-controls {
+            padding: 15px 20px 25px 20px;
+            background: var(--card);
+            border-top: 1px solid #f0f0f0;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         button { 
             padding: 15px; border: none; border-radius: 15px; font-weight: bold; 
-            background: #f1f1f1; cursor: pointer; font-size: 0.95rem; font-family: inherit;
+            background: #f1f1f1; cursor: pointer; font-family: inherit;
         }
         .btn-active { background: var(--primary) !important; color: white !important; }
         .btn-heat { grid-column: span 2; background: #ffeaa7; color: #d35400; font-size: 1.1rem; }
-        .btn-main { background: var(--primary); color: white; width: 80%; padding: 18px; border-radius: 50px; font-size: 1.2rem; margin-top: 30px; }
 
-        #log { font-size: 1rem; height: 26px; color: var(--danger); font-weight: bold; text-align: center; margin-bottom: 5px; }
-        #status-mini { font-size: 0.9rem; color: #777; margin-bottom: 15px; background: #f9f9f9; padding: 12px 25px; border-radius: 30px; width: 90%; text-align: center; }
+        #log { font-size: 1rem; min-height: 26px; color: var(--danger); font-weight: bold; margin-bottom: 5px; text-align: center; }
+        #status-mini { font-size: 0.9rem; color: #777; margin-bottom: 10px; background: #f9f9f9; padding: 10px; border-radius: 30px; width: 100%; text-align: center; }
         
         .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .content-box { background: white; padding: 30px; border-radius: 25px; width: 90%; max-width: 380px; text-align: center; }
-
-        #result-card { background: white; padding: 20px; border-radius: 20px; border: 2px solid var(--primary); margin-bottom: 20px; }
-        #final-score { font-size: 3.5rem; font-weight: 900; color: var(--primary); margin: 10px 0; }
-        .rank-text { font-size: 1.3rem; font-weight: bold; color: #636e72; }
+        .boiling { animation: shake 0.15s infinite; }
+        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(1px, 1px); } 75% { transform: translate(-1px, -1px); } }
     </style>
 </head>
 <body oncontextmenu="return false">
@@ -109,80 +126,86 @@
     <div id="drag-icon"></div>
 
     <div id="start-screen" class="screen active">
-        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <div style="font-size: clamp(5rem, 20vh, 7rem);">🧪</div>
-            <h1 style="color: var(--primary); font-size: 2.2rem; margin: 10px 0;">S의 마법약 가게</h1>
-            <p style="color: #888; margin-bottom: 20px;">전설적인 마법약사가 되어보세요</p>
-            <button class="btn-main" onclick="startGame()">게임 시작</button>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;">
+            <div style="font-size: 6rem;">🧪</div>
+            <h1 style="color: var(--primary); font-size: 2.5rem; margin: 20px 0;">S의 마법약 가게</h1>
+            <button style="background: var(--primary); color: white; width: 80%; padding: 20px; border-radius: 50px; font-size: 1.3rem; border:none;" onclick="startGame()">게임 시작</button>
         </div>
     </div>
 
     <div id="game-screen" class="screen">
-        <div class="score-display">점수 <span id="game-score-text">0</span></div>
-        <div class="timer-container"><div id="timer">100</div></div>
-        <div id="manual-btn" onclick="toggleModal(true)">📜</div>
-        
-        <div class="inventory">
-            <div class="item" onmousedown="grabItem(event, '🦷')" ontouchstart="grabItem(event, '🦷')">🦷</div>
-            <div class="item" onmousedown="grabItem(event, '🐌')" ontouchstart="grabItem(event, '🐌')">🐌</div>
-            <div class="item" onmousedown="grabItem(event, '🦔')" ontouchstart="grabItem(event, '🦔')">🦔</div>
+        <div class="header-ui">
+            <div class="score-display">점수 <span id="game-score-text">0</span></div>
+            <div class="timer-container"><div id="timer">100</div></div>
+            <div id="manual-btn" onclick="toggleModal(true)">📜</div>
         </div>
 
-        <button onclick="crushFangs()" style="width: 100%; margin-bottom: 10px; background: #eee;">🔨 송곳니 빻기 (<span id="crush-count">0</span>/6)</button>
-        <div id="log"></div>
-
-        <div id="pot-container" onmousedown="startStir(event)" ontouchstart="startStir(event)">
-            <div id="pot">
-                <div id="liquid">🌀</div>
-                <div id="temp-display" style="font-size: 2.2rem; font-weight: 800; color: white;">25°C</div>
-                <div id="pot-status" style="font-size: 0.85rem; color: #ccc; margin-top: 5px; font-weight: 500;">준비 중</div>
-                <div id="potion-result" onclick="submitPotion()" style="display:none; font-size: 80px; cursor:pointer; position: absolute; z-index: 50; filter: drop-shadow(0 0 10px rgba(255,255,255,0.8));">🧪</div>
+        <div class="main-content" id="scroll-area">
+            <div class="inventory">
+                <div class="item" onmousedown="grabItem(event, '🦷')" ontouchstart="grabItem(event, '🦷')">🦷</div>
+                <div class="item" onmousedown="grabItem(event, '🐌')" ontouchstart="grabItem(event, '🐌')">🐌</div>
+                <div class="item" onmousedown="grabItem(event, '🦔')" ontouchstart="grabItem(event, '🦔')">🦔</div>
             </div>
-        </div>
 
-        <div id="status-mini">
-            🦷 <span id="c-fang">0</span> &nbsp; 🐌 <span id="c-slug">0</span> &nbsp; 🦔 <span id="c-quill">0</span> &nbsp; 🌀 <span id="c-stir">0</span>
-        </div>
+            <button onclick="crushFangs()" style="width: 100%; margin-bottom: 10px; padding: 12px; border: 1px solid #ddd; border-radius: 12px;">🔨 송곳니 빻기 (<span id="crush-count">0</span>/6)</button>
+            
+            <div id="log"></div>
 
-        <div class="controls">
-            <button class="btn-heat" onmousedown="startHeat()" onmouseup="stopHeat()" ontouchstart="startHeat(event)" ontouchend="stopHeat(event)">🔥 가열 (꾹 누르기)</button>
-            <button id="btn-stir-mode" onclick="toggleStirMode()">🌀 젓기 모드</button>
-            <button onclick="waveWand()">🪄 지팡이</button>
+            <div id="pot-container" onmousedown="startStir(event)" ontouchstart="startStir(event)">
+                <div id="pot">
+                    <div id="liquid">🌀</div>
+                    <div id="temp-display" style="font-size: 2.2rem; font-weight: 800; color: white;">25°C</div>
+                    <div id="pot-status" style="font-size: 0.85rem; color: #ccc; margin-top: 5px;">준비 중</div>
+                    <div id="potion-result" onclick="submitPotion()" style="display:none; font-size: 80px; cursor:pointer; position: absolute; z-index: 50;">🧪</div>
+                </div>
+            </div>
+
+            <div id="status-mini">
+                🦷 <span id="c-fang">0</span> &nbsp; 🐌 <span id="c-slug">0</span> &nbsp; 🦔 <span id="c-quill">0</span> &nbsp; 🌀 <span id="c-stir">0</span>
+            </div>
+            
+            <div style="height: 20px;"></div> </div>
+
+        <div class="footer-controls">
+            <div class="controls">
+                <button class="btn-heat" onmousedown="startHeat()" onmouseup="stopHeat()" ontouchstart="startHeat(event)" ontouchend="stopHeat(event)">🔥 가열 (꾹 누르기)</button>
+                <button id="btn-stir-mode" onclick="toggleStirMode()">🌀 젓기 모드</button>
+                <button onclick="waveWand()">🪄 지팡이</button>
+            </div>
         </div>
     </div>
 
     <div id="gameover-screen" class="overlay">
         <div class="content-box">
             <div id="capture-area">
-                <div id="result-card">
+                <div style="border: 2px solid var(--primary); padding: 20px; border-radius: 20px; margin-bottom: 20px; background:white;">
                     <h2 id="result-title" style="margin: 0; color: var(--danger);">GAME OVER</h2>
-                    <div id="final-score">0</div>
-                    <div class="rank-text" id="rank-text">평범한 마법약사</div>
-                    <p style="font-size: 0.8rem; color: #aaa; margin-top: 10px;">S의 마법약 가게 - 결과표</p>
+                    <div id="final-score" style="font-size: 3.5rem; font-weight: 900; color: var(--primary); margin: 10px 0;">0</div>
+                    <div id="rank-text" style="font-size: 1.3rem; font-weight: bold; color: #636e72;">평범한 마법약사</div>
                 </div>
             </div>
-            <button onclick="saveImage()" style="background: #00b894; color: white; width: 100%; padding: 14px; border-radius: 12px; margin-bottom: 10px; font-weight: bold; border:none;">📷 이미지 저장</button>
-            <button onclick="location.reload()" style="background: var(--primary); color: white; width: 100%; padding: 14px; border-radius: 12px; font-weight: bold; border:none;">다시 도전</button>
+            <button onclick="saveImage()" style="background: #00b894; color: white; width: 100%; padding: 14px; border-radius: 12px; margin-bottom: 10px; border:none; font-weight:bold;">📷 이미지 저장</button>
+            <button onclick="location.reload()" style="background: var(--primary); color: white; width: 100%; padding: 14px; border-radius: 12px; border:none; font-weight:bold;">다시 도전</button>
         </div>
     </div>
 
     <div id="modal" class="overlay" onclick="toggleModal(false)">
         <div class="content-box" onclick="event.stopPropagation()">
-            <h3 style="margin: 0 0 15px 0; color: var(--primary); font-size: 1.4rem;">📜 종기 치료제 레시피</h3>
-            <div style="font-size: 0.95rem; text-align: left; line-height: 1.7; background: #fcfcfc; padding: 15px; border-radius: 15px; border: 1px dashed #ddd;">
+            <h3 style="margin: 0 0 15px 0; color: var(--primary);">📜 종기 치료제 레시피</h3>
+            <div style="font-size: 0.9rem; text-align: left; line-height: 1.7; background: #f9f9f9; padding: 15px; border-radius: 15px;">
                 1. 송곳니 6번 빻기 → 가루 4번 투하<br>
                 2. 온도 250°C 근처 유지<br>
                 3. 지팡이 휘두르고 3초 대기<br>
                 4. 뿔 민달팽이 4개 + 바늘 2개 투하<br>
                 5. <b>시계 방향(↻)</b>으로 5번 젓기<br>
-                6. 지팡이 마무리 후 생성된 🧪 클릭!<br>
-                <span style="color: var(--danger); font-weight: bold;">* 300도 초과 시 폭발!</span>
+                6. 지팡이 마무리 후 생성된 🧪 클릭!
             </div>
-            <button onclick="toggleModal(false)" style="margin-top: 20px; width: 100%; background: #333; color: white; padding: 12px; border-radius: 10px; border:none;">이해했습니다</button>
+            <button onclick="toggleModal(false)" style="margin-top: 15px; width: 100%; padding: 10px; border-radius: 10px; border:none; background:#333; color:white;">닫기</button>
         </div>
     </div>
 
     <script>
+        // 핵심 로직은 이전과 동일하되, 드래그 시 스크롤 간섭 방지 로직 추가
         let score = 0, timeLeft = 100, temp = 25, fangsCrushed = 0;
         let potData = { fang: 0, slug: 0, quill: 0, stir: 0, penalty: 0 };
         let wandPhase = 0, gameActive = false, heatInterval;
@@ -193,6 +216,7 @@
 
         function grabItem(e, emoji) {
             if(isStirMode || !gameActive) return;
+            // 드래그 시작 시 스크롤 일시 정지 효과를 위해 기본 동작 방지
             isGrabbing = true; grabId = emoji;
             const dragIcon = document.getElementById('drag-icon');
             dragIcon.innerText = emoji; dragIcon.style.display = 'block';
@@ -214,6 +238,10 @@
         function startStir(e) { if(isStirMode && gameActive) { isStirring = true; lastAngle = null; totalRotation = 0; } }
 
         function handleMove(e) {
+            if (isGrabbing || isStirring) {
+                // 아이템 드래그 중이거나 젓기 중일 때 화면이 밀리는(스크롤) 것을 방지
+                if(e.cancelable) e.preventDefault();
+            }
             if (isGrabbing) moveIcon(e);
             if (isStirring) {
                 const { clientX, clientY } = getCoords(e);
@@ -256,7 +284,7 @@
 
         function startHeat(e) {
             if(!gameActive) return;
-            if(e) e.preventDefault();
+            if(e && e.cancelable) e.preventDefault();
             document.getElementById('pot').classList.add('boiling');
             heatInterval = setInterval(() => {
                 temp += 4; updateUI();
@@ -318,13 +346,8 @@
             gameActive = false;
             document.getElementById('result-title').innerText = reason;
             document.getElementById('final-score').innerText = score;
-            
-            let rank = "낙제";
-            if(score >= 400) rank = "O(출중함)";
-            else if(score >= 250) rank = "E(기대 이상)";
-            else if(score >= 100) rank = "A(합격)";
+            let rank = score >= 400 ? "O(출중함)" : (score >= 250 ? "E(기대 이상)" : (score >= 100 ? "A(합격)" : "낙제"));
             document.getElementById('rank-text').innerText = rank;
-
             document.getElementById('gameover-screen').style.display = 'flex';
         }
 
