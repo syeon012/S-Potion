@@ -291,9 +291,9 @@
             document.getElementById('final-score').innerText = score;
             
             let rank = "낙제";
-            if(score >= 300) rank = "O(출중함)";
-            else if(score >= 200) rank = "E(기대 이상)";
-            else if(score >= 100) rank = "A(합격)";
+            if(score >= 500) rank = "O(출중함)";
+            else if(score >= 350) rank = "E(기대 이상)";
+            else if(score >= 200) rank = "A(합격)";
             document.getElementById('rank-text').innerText = rank;
 
             document.getElementById('gameover-screen').style.display = 'flex';
@@ -322,4 +322,652 @@
         }
     </script>
 </body>
+</html><!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+    <title>Wuthering Heights - S의 마법약 가게</title>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <style>
+
+        :root {
+
+            --bg: #fdfdfd;
+
+            --card: #ffffff;
+
+            --text: #333333;
+
+            --primary: #6c5ce7;
+
+            --danger: #ff7675;
+
+            --border: #eeeeee;
+
+        }
+
+
+
+        * {
+
+            user-select: none;
+
+            -webkit-user-drag: none;
+
+            -webkit-tap-highlight-color: transparent;
+
+        }
+
+
+
+        body { 
+
+            background: var(--bg); color: var(--text); 
+
+            font-family: 'Pretendard', sans-serif;
+
+            margin: 0; display: flex; justify-content: center; align-items: center; 
+
+            height: 100vh; overflow: hidden; touch-action: none;
+
+        }
+
+
+
+        .screen { 
+
+            display: none; width: 100%; max-width: 450px; height: 100%; 
+
+            background: var(--card); padding: 20px; box-sizing: border-box;
+
+            flex-direction: column; align-items: center; position: relative;
+
+        }
+
+        .active { display: flex; }
+
+
+
+        .timer-container { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); }
+
+        #timer { font-size: 2.8rem; font-weight: 800; }
+
+        .score-display { position: absolute; top: 30px; left: 20px; font-weight: bold; color: var(--primary); }
+
+        #manual-btn { position: absolute; top: 25px; right: 20px; font-size: 1.8rem; cursor: pointer; z-index: 20; }
+
+
+
+        .inventory { display: flex; gap: 12px; margin: 100px 0 20px 0; }
+
+        .item { 
+
+            width: 70px; height: 70px; background: #f9f9f9; border: 1px solid var(--border);
+
+            border-radius: 20px; font-size: 35px; display: flex; align-items: center; justify-content: center; cursor: pointer;
+
+        }
+
+
+
+        #drag-icon { position: fixed; pointer-events: none; z-index: 9999; font-size: 45px; display: none; transform: translate(-50%, -50%); }
+
+
+
+        #pot-container { position: relative; margin: 20px 0; }
+
+        #pot { 
+
+            width: 210px; height: 190px; background: #444; border: 6px solid #222; border-radius: 50% 50% 40% 40%; 
+
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+
+            transition: background-color 0.2s; position: relative; box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+
+        }
+
+
+
+        .boiling { animation: shake 0.15s infinite; }
+
+        @keyframes shake { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(1px, 1px); } 75% { transform: translate(-1px, -1px); } }
+
+
+
+        #liquid { position: absolute; width: 100px; height: 100px; font-size: 50px; display: none; align-items: center; justify-content: center; animation: spin 1.5s linear infinite; }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+
+
+        .controls { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; padding-bottom: 20px; }
+
+        button { padding: 16px; border: none; border-radius: 15px; font-weight: bold; background: #f1f1f1; cursor: pointer; }
+
+        .btn-active { background: var(--primary) !important; color: white !important; }
+
+        .btn-heat { grid-column: span 2; background: #ffeaa7; color: #d35400; }
+
+        .btn-main { background: var(--primary); color: white; width: 80%; padding: 18px; border-radius: 50px; font-size: 1.2rem; }
+
+
+
+        #log { font-size: 1rem; height: 24px; color: var(--danger); font-weight: bold; text-align: center; margin-bottom: 5px; }
+
+        #status-mini { font-size: 0.9rem; color: #999; margin-bottom: 10px; background: #f9f9f9; padding: 10px 25px; border-radius: 30px; }
+
+        
+
+        .overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+
+        .content-box { background: white; padding: 30px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; }
+
+
+
+        #result-card { background: white; padding: 20px; border-radius: 20px; border: 2px solid var(--primary); margin-bottom: 20px; }
+
+        #final-score { font-size: 3rem; font-weight: 900; color: var(--primary); margin: 10px 0; }
+
+        .rank-text { font-size: 1.2rem; font-weight: bold; color: #636e72; }
+
+    </style>
+
+</head>
+
+<body oncontextmenu="return false">
+
+
+
+    <div id="drag-icon"></div>
+
+
+
+    <div id="start-screen" class="screen active">
+
+        <div style="font-size: 6rem; margin-top: 150px;">🧪</div>
+
+        <h1 style="color: var(--primary); font-size: 2.2rem;">S의 마법약 가게</h1>
+
+        <button class="btn-main" onclick="startGame()">게임 시작</button>
+
+    </div>
+
+
+
+    <div id="game-screen" class="screen">
+
+        <div class="score-display">점수 <span id="game-score-text">0</span></div>
+
+        <div class="timer-container"><div id="timer">100</div></div>
+
+        <div id="manual-btn" onclick="toggleModal(true)">📜</div>
+
+        
+
+        <div class="inventory">
+
+            <div class="item" onmousedown="grabItem(event, '🦷')" ontouchstart="grabItem(event, '🦷')">🦷</div>
+
+            <div class="item" onmousedown="grabItem(event, '🐌')" ontouchstart="grabItem(event, '🐌')">🐌</div>
+
+            <div class="item" onmousedown="grabItem(event, '🦔')" ontouchstart="grabItem(event, '🦔')">🦔</div>
+
+        </div>
+
+
+
+        <button onclick="crushFangs()" style="width: 100%; margin-bottom: 10px;">🔨 송곳니 빻기 (<span id="crush-count">0</span>/6)</button>
+
+        <div id="log"></div>
+
+
+
+        <div id="pot-container" onmousedown="startStir(event)" ontouchstart="startStir(event)">
+
+            <div id="pot">
+
+                <div id="liquid">🌀</div>
+
+                <div id="temp-display" style="font-size: 2rem; font-weight: 800; color: white;">25°C</div>
+
+                <div id="pot-status" style="font-size: 0.8rem; color: #ccc; margin-top: 5px;">준비 중</div>
+
+                <div id="potion-result" onclick="submitPotion()" style="display:none; font-size: 70px; cursor:pointer; position: absolute; z-index: 50;">🧪</div>
+
+            </div>
+
+        </div>
+
+
+
+        <div id="status-mini">
+
+            🦷 <span id="c-fang">0</span> &nbsp; 🐌 <span id="c-slug">0</span> &nbsp; 🦔 <span id="c-quill">0</span> &nbsp; 🌀 <span id="c-stir">0</span>
+
+        </div>
+
+
+
+        <div class="controls">
+
+            <button class="btn-heat" onmousedown="startHeat()" onmouseup="stopHeat()" ontouchstart="startHeat(event)" ontouchend="stopHeat(event)">🔥 가열 (꾹 누르기)</button>
+
+            <button id="btn-stir-mode" onclick="toggleStirMode()">🌀 젓기 모드</button>
+
+            <button onclick="waveWand()">🪄 지팡이</button>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="gameover-screen" class="overlay">
+
+        <div class="content-box">
+
+            <div id="capture-area">
+
+                <div id="result-card">
+
+                    <h2 id="result-title" style="margin: 0; color: var(--danger);">GAME OVER</h2>
+
+                    <div id="final-score">0</div>
+
+                    <div class="rank-text" id="rank-text">평범한 마법약사</div>
+
+                    <p style="font-size: 0.8rem; color: #aaa; margin-top: 10px;">S의 마법약 가게 - 결과표</p>
+
+                </div>
+
+            </div>
+
+            <button onclick="saveImage()" style="background: #00b894; color: white; width: 100%; padding: 12px; border-radius: 10px; margin-bottom: 10px;">📷 이미지로 저장하기</button>
+
+            <button onclick="location.reload()" style="background: var(--primary); color: white; width: 100%; padding: 12px; border-radius: 10px;">다시 도전</button>
+
+        </div>
+
+    </div>
+
+
+
+    <div id="modal" class="overlay" onclick="toggleModal(false)">
+
+        <div class="content-box" onclick="event.stopPropagation()">
+
+            <h3 style="margin: 0 0 15px 0; color: var(--primary);">📜 종기 치료제 레시피</h3>
+
+            <div style="font-size: 0.85rem; text-align: left; line-height: 1.6;">
+
+                1. 송곳니 6번 빻기 → 가루 4번 투하<br>
+
+                2. 온도 250°C 근처 유지<br>
+
+                3. 지팡이 휘두르고 3초 대기 (반응성공 뜰 때까지)<br>
+
+                4. 뿔 민달팽이 4개 + 바늘 2개 투하<br>
+
+                5. <b>시계 방향(↻)</b>으로 5번 젓기<br>
+
+                6. 지팡이 마무리 후 생성된 🧪 클릭!<br>
+
+                <span style="color: var(--danger)">* 300도 초과 시 폭발! / 필수조건 미준수 시 0점</span>
+
+            </div>
+
+            <button onclick="toggleModal(false)" style="margin-top: 15px; width: 100%;">닫기</button>
+
+        </div>
+
+    </div>
+
+
+
+    <script>
+
+        let score = 0, timeLeft = 100, temp = 25, fangsCrushed = 0;
+
+        let potData = { fang: 0, slug: 0, quill: 0, stir: 0, penalty: 0 };
+
+        let wandPhase = 0, gameActive = false, heatInterval;
+
+        let isGrabbing = false, grabId = '', isStirMode = false, isStirring = false;
+
+        let lastAngle = null, totalRotation = 0;
+
+
+
+        const getCoords = (e) => e.touches ? e.touches[0] : e;
+
+
+
+        function grabItem(e, emoji) {
+
+            if(isStirMode) return;
+
+            isGrabbing = true; grabId = emoji;
+
+            const dragIcon = document.getElementById('drag-icon');
+
+            dragIcon.innerText = emoji; dragIcon.style.display = 'block';
+
+            moveIcon(e);
+
+        }
+
+
+
+        function moveIcon(e) {
+
+            const { clientX, clientY } = getCoords(e);
+
+            const dragIcon = document.getElementById('drag-icon');
+
+            dragIcon.style.left = clientX + 'px'; dragIcon.style.top = clientY + 'px';
+
+        }
+
+
+
+        function toggleStirMode() {
+
+            isStirMode = !isStirMode;
+
+            document.getElementById('btn-stir-mode').classList.toggle('btn-active');
+
+            document.getElementById('liquid').style.display = isStirMode ? 'flex' : 'none';
+
+        }
+
+
+
+        function startStir(e) { if(isStirMode && gameActive) { isStirring = true; lastAngle = null; totalRotation = 0; } }
+
+
+
+        function handleMove(e) {
+
+            if (isGrabbing) moveIcon(e);
+
+            if (isStirring) {
+
+                const { clientX, clientY } = getCoords(e);
+
+                const rect = document.getElementById('pot').getBoundingClientRect();
+
+                const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2;
+
+                const angle = Math.atan2(clientY - cy, clientX - cx);
+
+                if (lastAngle !== null) {
+
+                    let delta = angle - lastAngle;
+
+                    if (delta > Math.PI) delta -= Math.PI * 2;
+
+                    if (delta < -Math.PI) delta += Math.PI * 2;
+
+                    totalRotation += delta;
+
+                    if (Math.abs(totalRotation) >= Math.PI * 2) {
+
+                        // 시계 방향(양수) 감지 로직으로 변경
+
+                        if (totalRotation > 0) { potData.stir++; showLog("↻ 시계 방향 젓기!"); }
+
+                        else { potData.penalty += 10; showLog("↺ 방향 틀림! -10"); }
+
+                        totalRotation = 0; updateUI();
+
+                    }
+
+                }
+
+                lastAngle = angle;
+
+            }
+
+        }
+
+
+
+        window.addEventListener('mousemove', handleMove);
+
+        window.addEventListener('touchmove', handleMove, {passive: false});
+
+        window.addEventListener('mouseup', endAction);
+
+        window.addEventListener('touchend', endAction);
+
+
+
+        function endAction(e) { if (isGrabbing) dropItem(e); isStirring = false; }
+
+
+
+        function dropItem(e) {
+
+            const { clientX, clientY } = e.changedTouches ? e.changedTouches[0] : e;
+
+            const rect = document.getElementById('pot').getBoundingClientRect();
+
+            if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+
+                if(grabId === '🦷') potData.fang++;
+
+                else if(grabId === '🐌') potData.slug++;
+
+                else if(grabId === '🦔') potData.quill++;
+
+                updateUI();
+
+            }
+
+            isGrabbing = false; document.getElementById('drag-icon').style.display = 'none';
+
+        }
+
+
+
+        function startHeat(e) {
+
+            if(!gameActive) return;
+
+            if(e) e.preventDefault();
+
+            document.getElementById('pot').classList.add('boiling');
+
+            heatInterval = setInterval(() => {
+
+                temp += 4; updateUI();
+
+                if(temp >= 300) finishGame("냄비 폭발!");
+
+            }, 100);
+
+        }
+
+        function stopHeat() { clearInterval(heatInterval); document.getElementById('pot').classList.remove('boiling'); }
+
+
+
+        function waveWand() {
+
+            if(!gameActive) return;
+
+            if(wandPhase === 0) {
+
+                wandPhase = 1; document.getElementById('pot-status').innerText = "마법 반응 중...";
+
+                setTimeout(() => { if(gameActive) { wandPhase = 2; document.getElementById('pot-status').innerText = "반응 성공!"; } }, 3000);
+
+            } else {
+
+                document.getElementById('potion-result').style.display = "block";
+
+            }
+
+        }
+
+
+
+        function submitPotion() {
+
+            let rs = 100;
+
+            if(fangsCrushed<6 || potData.fang!==4 || temp<230 || wandPhase<2) rs = 0;
+
+            else {
+
+                let m = 0;
+
+                if(potData.slug!==4) m++; if(potData.quill!==2) m++; if(potData.stir!==5) m++;
+
+                if(temp > 270) m++;
+
+                rs = Math.max(0, rs - (m*20) - potData.penalty);
+
+            }
+
+            score += rs;
+
+            document.getElementById('game-score-text').innerText = score;
+
+            resetPot();
+
+            showLog(rs > 0 ? `+${rs}점!` : "제조 실패 (0점)");
+
+        }
+
+
+
+        function startGame() {
+
+            document.getElementById('start-screen').classList.remove('active');
+
+            document.getElementById('game-screen').classList.add('active');
+
+            gameActive = true;
+
+            const timerObj = setInterval(() => {
+
+                if(gameActive) {
+
+                    timeLeft--;
+
+                    document.getElementById('timer').innerText = timeLeft;
+
+                    if(timeLeft<=0) finishGame("시간 종료!");
+
+                } else { clearInterval(timerObj); }
+
+            }, 1000);
+
+        }
+
+
+
+        function updateUI() {
+
+            document.getElementById('temp-display').innerText = temp + "°C";
+
+            document.getElementById('c-fang').innerText = potData.fang;
+
+            document.getElementById('c-slug').innerText = potData.slug;
+
+            document.getElementById('c-quill').innerText = potData.quill;
+
+            document.getElementById('c-stir').innerText = potData.stir;
+
+            let r = Math.min(255, (temp - 25) * 1.5); 
+
+            document.getElementById('pot').style.backgroundColor = `rgb(${85 + r}, ${85 - r/3}, ${85 - r/3})`;
+
+        }
+
+
+
+        function finishGame(reason) {
+
+            gameActive = false;
+
+            document.getElementById('result-title').innerText = reason;
+
+            document.getElementById('final-score').innerText = score;
+
+            
+
+            let rank = "낙제";
+
+            if(score >= 500) rank = "O(출중함)";
+
+            else if(score >= 350) rank = "E(기대 이상)";
+
+            else if(score >= 200) rank = "A(합격)";
+
+            document.getElementById('rank-text').innerText = rank;
+
+
+
+            document.getElementById('gameover-screen').style.display = 'flex';
+
+        }
+
+
+
+        function saveImage() {
+
+            const area = document.getElementById('capture-area');
+
+            html2canvas(area).then(canvas => {
+
+                const link = document.createElement('a');
+
+                link.download = `마법약_결과_${score}점.png`;
+
+                link.href = canvas.toDataURL();
+
+                link.click();
+
+            });
+
+        }
+
+
+
+        function crushFangs() { if(fangsCrushed<6) fangsCrushed++; document.getElementById('crush-count').innerText = fangsCrushed; }
+
+        function toggleModal(show) { document.getElementById('modal').style.display = show ? 'flex' : 'none'; }
+
+        function showLog(msg) { document.getElementById('log').innerText = msg; setTimeout(()=>document.getElementById('log').innerText="", 2000); }
+
+        function resetPot() {
+
+            temp = 25; fangsCrushed = 0; wandPhase = 0; potData = { fang:0, slug:0, quill:0, stir:0, penalty:0 };
+
+            document.getElementById('potion-result').style.display = "none";
+
+            document.getElementById('crush-count').innerText = 0;
+
+            document.getElementById('pot-status').innerText = "준비 중";
+
+            if(isStirMode) toggleStirMode();
+
+            updateUI();
+
+        }
+
+    </script>
+
+</body>
+
 </html>
